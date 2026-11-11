@@ -1,6 +1,7 @@
 package com.example.demo.user;
 
 import com.example.demo.referrals.ReferralsServices;
+import com.example.demo.user.dto.CreateUserDTO;
 import com.example.demo.user.dto.UserResponseDTO;
 import com.example.demo.user.entity.Users;
 import io.swagger.v3.oas.annotations.Operation;
@@ -52,7 +53,7 @@ public class UsersController {
     })
     @PostMapping("/register")
     public ResponseEntity<Object> registerUser(
-            @RequestBody Users user,
+            @RequestBody CreateUserDTO user,
             @Parameter(description = "Código de indicação (opcional)", example = "REF12345")
             @RequestParam(required = false) String ref) {
         try {
@@ -84,7 +85,6 @@ public class UsersController {
     @PostMapping("/login")
     public ResponseEntity<Object> loginUser(@RequestBody Users user) {
         try {
-            System.out.println(user.getEmail());
             UserResponseDTO loggedUser = usersService.loginUser(user);
             return new ResponseEntity<>(loggedUser, HttpStatus.OK);
         } catch (Exception err) {
@@ -113,11 +113,8 @@ public class UsersController {
             @Parameter(description = "ID único do usuário", example = "1")
             @PathVariable long id) {
         try {
-            Users user = usersService.getUserById(id).get();
-            return new ResponseEntity<>(
-                    new UserResponseDTO(user, "", referralsService.getReferralsPoints(user)),
-                    HttpStatus.OK
-            );
+            UserResponseDTO response = usersService.getUserById(id);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception err) {
             return new ResponseEntity<>(err.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
