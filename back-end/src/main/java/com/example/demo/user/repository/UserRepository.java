@@ -1,9 +1,11 @@
 package com.example.demo.user.repository;
 
 import com.example.demo.user.entity.Users;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+@Repository
 public class UserRepository {
     private final UsersRepository usersRepository;
 

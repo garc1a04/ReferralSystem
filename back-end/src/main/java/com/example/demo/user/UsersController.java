@@ -2,6 +2,7 @@ package com.example.demo.user;
 
 import com.example.demo.referrals.ReferralsServices;
 import com.example.demo.user.dto.CreateUserDTO;
+import com.example.demo.user.dto.ResponseUserDTO;
 import com.example.demo.user.dto.UserResponseDTO;
 import com.example.demo.user.entity.Users;
 import io.swagger.v3.oas.annotations.Operation;
@@ -57,7 +58,7 @@ public class UsersController {
             @Parameter(description = "Código de indicação (opcional)", example = "REF12345")
             @RequestParam(required = false) String ref) {
         try {
-            Users response = usersService.registerUser(user, ref);
+            ResponseUserDTO response = usersService.registerUser(user, ref);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException err) {
             return new ResponseEntity<>(err.getMessage(), HttpStatus.BAD_REQUEST);
@@ -85,7 +86,7 @@ public class UsersController {
     @PostMapping("/login")
     public ResponseEntity<Object> loginUser(@RequestBody Users user) {
         try {
-            UserResponseDTO loggedUser = usersService.loginUser(user);
+            ResponseUserDTO loggedUser = usersService.loginUser(user);
             return new ResponseEntity<>(loggedUser, HttpStatus.OK);
         } catch (Exception err) {
             return new ResponseEntity<>(err.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -113,7 +114,7 @@ public class UsersController {
             @Parameter(description = "ID único do usuário", example = "1")
             @PathVariable long id) {
         try {
-            UserResponseDTO response = usersService.getUserById(id);
+            ResponseUserDTO response = usersService.getUserById(id);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception err) {
             return new ResponseEntity<>(err.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

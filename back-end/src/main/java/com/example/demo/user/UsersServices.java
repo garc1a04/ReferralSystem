@@ -4,6 +4,7 @@ import com.example.demo.shared.Security.JwtUtil;
 import com.example.demo.shared.Security.SecurityConfig;
 import com.example.demo.referrals.ReferralsServices;
 import com.example.demo.user.dto.CreateUserDTO;
+import com.example.demo.user.dto.ResponseUserDTO;
 import com.example.demo.user.dto.UserResponseDTO;
 import com.example.demo.user.entity.Users;
 import com.example.demo.user.mapper.UserMapper;
@@ -28,9 +29,8 @@ public class UsersServices {
     }
     
     @Transactional
-    public Users registerUser(CreateUserDTO userDTO, String ref) {
+    public ResponseUserDTO registerUser(CreateUserDTO userDTO, String ref) {
     	Users user = UserMapper.toEntity(userDTO);
-        System.out.println(user.toString());
 
     	if (this.usersRepository.getUserByEmail(user.getEmail()).isPresent()) {
     		throw new IllegalStateException("Email already registered!");
@@ -46,10 +46,12 @@ public class UsersServices {
 
     		referralsService.createReferral(newUser, referrer);
     	}
-    	
-    	return newUser;
+
+        String accessToken = JwtUtil.generateToken(user.getEmail(), user.getIdUser());
+    	return UserMapper.toResponse(newUser, referralsService.getReferralsPoints(newUser), accessToken);
     }
-    
+
+    //TODO MODIFICAR ESSE REF AQUI
     public String createRef() {
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         Random random = new Random();
@@ -65,8 +67,8 @@ public class UsersServices {
 
         return ref;
     }
-    
-    public UserResponseDTO loginUser(Users loginRequest) {
+
+    public ResponseUserDTO loginUser(Users loginRequest) {
     	Users user = this.usersRepository.getUserByEmail(loginRequest.getEmail())
     			.orElseThrow(() -> new RuntimeException("User not found."));
     	
@@ -76,19 +78,15 @@ public class UsersServices {
     	if (!matches) {
     		throw new RuntimeException("Incorrect password.");
     	}
-    	
-    	UserResponseDTO response = new UserResponseDTO(user,JwtUtil.generateToken(user.getEmail(), user.getIdUser()),referralsService.getReferralsPoints(user));
-    	return response;
+
+        String accessToken = JwtUtil.generateToken(user.getEmail(), user.getIdUser());
+        return UserMapper.toResponse(user, referralsService.getReferralsPoints(user), accessToken);
     }
 
-    public UserResponseDTO getUserById(long id) {
+    public ResponseUserDTO getUserById(long id) {
         Users user = this.usersRepository.getUserById(id)
-                .orElseThrow(() -> new RuntimeException("User not found."));;
-        UserResponseDTO response =
-                new UserResponseDTO(user,
-                        JwtUtil.generateToken(user.getEmail(), user.getIdUser()),
-                        referralsService.getReferralsPoints(user));
+                .orElseThrow(() -> new RuntimeException("User not found."));
 
-        return  response;
+        return  UserMapper.toResponse(user, referralsService.getReferralsPoints(user), null);
     }
 }
