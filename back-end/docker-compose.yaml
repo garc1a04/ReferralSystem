@@ -11,7 +11,28 @@ services:
     ports:
       - "${DB_PORT}:3306"
     volumes:
-      - mysql_data:/var/lib/docker/data
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_referrals
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_URL: "jdbc:mysql://db:3306/${DB_DATABASE}?createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 
 volumes:
   mysql_data:
