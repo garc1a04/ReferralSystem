@@ -1,10 +1,10 @@
 package com.example.demo.user;
 
-import com.example.demo.referrals.ReferralsServices;
+import com.example.demo.user.services.ReferralsServices;
 import com.example.demo.user.dto.CreateUserDTO;
+import com.example.demo.user.dto.LoginUserDTO;
 import com.example.demo.user.dto.ResponseUserDTO;
-import com.example.demo.user.dto.UserResponseDTO;
-import com.example.demo.user.entity.Users;
+import com.example.demo.user.services.UsersServices;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -39,7 +39,7 @@ public class UsersController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Usuário cadastrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = Users.class))
+                    content = @Content(schema = @Schema(implementation = ResponseUserDTO.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -75,7 +75,7 @@ public class UsersController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Login realizado com sucesso",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+                    content = @Content(schema = @Schema(implementation = ResponseUserDTO.class))
             ),
             @ApiResponse(
                     responseCode = "500",
@@ -84,7 +84,7 @@ public class UsersController {
             )
     })
     @PostMapping("/login")
-    public ResponseEntity<Object> loginUser(@RequestBody Users user) {
+    public ResponseEntity<Object> loginUser(@RequestBody LoginUserDTO user) {
         try {
             ResponseUserDTO loggedUser = usersService.loginUser(user);
             return new ResponseEntity<>(loggedUser, HttpStatus.OK);
@@ -101,7 +101,7 @@ public class UsersController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Usuário encontrado com sucesso",
-                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))
+                    content = @Content(schema = @Schema(implementation = ResponseUserDTO.class))
             ),
             @ApiResponse(
                     responseCode = "500",
@@ -120,4 +120,31 @@ public class UsersController {
             return new ResponseEntity<>(err.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Operation(
+            summary = "Lista as indicações de um usuário",
+            description = "Retorna a lista de usuários ou pontos de indicação vinculados ao ID do usuário informado."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Lista de indicações retornada com sucesso"
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Erro ao buscar indicações do usuário",
+                    content = @Content(schema = @Schema(implementation = String.class))
+            )
+    })
+    @GetMapping("/{id}/referrals")
+    public ResponseEntity<Object> getUsersReferr(
+            @Parameter(description = "ID do usuário indicador", example = "1")
+            @PathVariable Long id) {
+        try {
+            return new ResponseEntity<>(referralsService.getReferralsByUser(id), HttpStatus.OK);
+        } catch (Exception err) {
+            return new ResponseEntity<>(err.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
